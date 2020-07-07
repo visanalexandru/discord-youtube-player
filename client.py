@@ -34,15 +34,15 @@ class MyClient(Client):
             return
 
 
-        server=self.servers[message.guild.id]
         content=content[1:] #remove the first character
         tokens=content.split(' ')
+        
+        operation=tokens[0]
+        parameters=tokens[1:]
+        server=self.servers[message.guild.id]
         text_channel=message.channel
         voice=message.author.voice
 
-
-        operation=tokens[0]
-        parameters=tokens[1:]
 
 
         if (operation=="add"):#adds song to server queue
@@ -57,6 +57,9 @@ class MyClient(Client):
             except pytube.exceptions.RegexMatchError:
                 await self.say(text_channel,"The youtube link is invalid")
 
+
+
+
         elif(operation=="play"):
 
             if(voice==None):
@@ -67,8 +70,8 @@ class MyClient(Client):
                 await self.say(text_channel,"The queue is empty")
                 return
 
-            if(server.isPlayingAudio()):
-                await self.say(text_channel,"The bot is currently playing audio")
+            if(server.isPlaying()):
+                await self.say(text_channel,"The bot is currently playing a song")
                 return
 
             if(server.isConnectedToVoice() and server.current_voice_client.channel!=voice.channel):
@@ -79,13 +82,47 @@ class MyClient(Client):
                 server.setCurrentVoiceClient(new_voice_client)
             server.setNewTextChannel(text_channel)
             await server.playTopSong()
-        
+
+
+
+
+
         elif(operation=="skip"):
             if(voice==None):
                 await self.say(text_channel,"You need to be in a voice channel to skip a song")
                 return
-            if(not server.isPlayingAudio()):
-                await self.say(text_channel,"The bot is not playing audio")
+            if(not server.isPlaying()):
+                await self.say(text_channel,"The bot is not playing any songs")
                 return
             server.skipSong()
 
+
+
+
+        elif(operation=="pause"):
+            if(voice==None):
+                await self.say(text_channel,"You need to be in a voice channel to pause a song")
+                return
+
+            if(not server.isPlaying()):
+                await self.say(text_channel,"The bot is not playing any songs")
+                return
+
+
+            if(server.isPlayingAudioPaused()):
+                await self.say(text_channel,"The bot is already paused")
+                return
+            server.pauseSong()
+
+
+        elif(operation=="resume"):
+            if(voice==None):
+                await self.say(text_channel,"You need to be in a voice channel to resume a song")
+                return
+            if(not server.isPlaying()):
+                await self.say(text_channel,"The bot is not playing any songs")
+                return
+            if(server.isPlayingAudio()):
+                await self.say(text_channel,"The bot is already playing audio")
+                return
+            server.resumeSong()

@@ -35,13 +35,22 @@ class DiscordServer:
 
 
     def onStoppedPlayer(self,error):
-        coroutine=self.playTopSong()#start the next song in the queue
-        future=asyncio.run_coroutine_threadsafe(coroutine,self.client_loop)
-        future.result()
+        if(self.isConnectedToVoice()):#the player can be stopped when the bot is kicked 
+
+            coroutine=self.playTopSong()#start the next song in the queue
+            future=asyncio.run_coroutine_threadsafe(coroutine,self.client_loop)
+            future.result()
 
     def skipSong(self):
         self.current_voice_client.stop()#this will stop the voice client that will triger another song 
 
+
+    def pauseSong(self):
+        self.current_voice_client.pause()
+
+
+    def resumeSong(self):
+        self.current_voice_client.resume()
 
     def hasRemainingSongs(self):
         return len(self.song_queue)!=0
@@ -55,9 +64,15 @@ class DiscordServer:
        await self.current_voice_client.disconnect()
        self.current_voice_client=None
 
-
     def isPlayingAudio(self):
         return self.hasVoiceClient() and self.current_voice_client.is_playing()
+
+    def isPlayingAudioPaused(self):
+        return self.hasVoiceClient() and self.current_voice_client.is_paused()
+
+
+    def isPlaying(self):#if it is currently playing a song (even if it is paused)
+        return self.isPlayingAudioPaused()  or self.isPlayingAudio()
 
 
     def isConnectedToVoice(self):
