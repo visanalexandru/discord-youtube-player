@@ -23,10 +23,9 @@ class DiscordServer:
         self.song_queue.append((stream,title))
 
     async def playTopSong(self):
-        if(len(self.song_queue)==0):
+        if(not self.hasRemainingSongs()):
             await self.say("Finished queue")
             return
-
         top=self.song_queue.pop(0)
         stream=top[0]
         await self.say("Now playing: "+top[1])
@@ -36,7 +35,7 @@ class DiscordServer:
 
 
     def onStoppedPlayer(self,error):
-        coroutine=self.playTopSong()
+        coroutine=self.playTopSong()#start the next song in the queue
         future=asyncio.run_coroutine_threadsafe(coroutine,self.client_loop)
         future.result()
 
