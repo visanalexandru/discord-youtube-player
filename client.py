@@ -14,7 +14,7 @@ class MyClient(Client):
         print('Logged on as', self.user)
         print("Connected to servers:")
         for guild in self.guilds:
-            self.servers[guild.id]=discordserver.DiscordServer()
+            self.servers[guild.id]=discordserver.DiscordServer(self.loop)
             print("-"+guild.name+" #"+str(guild.id))
 
     async def say(self,channel,message):
@@ -24,7 +24,7 @@ class MyClient(Client):
     async def on_message(self, message):
 
         content=message.content
-        text_channel=message.channel
+
 
         if(len(content)==0 or content[0]!='~'):#message is invalid
             return
@@ -34,9 +34,12 @@ class MyClient(Client):
             return
 
 
-        guild=message.guild.id#get the server
+        server=self.servers[message.guild.id]
         content=content[1:] #remove the first character
         tokens=content.split(' ')
+        text_channel=message.channel
+        voice=message.author.voice
+
 
         operation=tokens[0]
         parameters=tokens[1:]
@@ -50,18 +53,15 @@ class MyClient(Client):
             link=parameters[0]
             try:
                 stream=youtubebuffer.getStream(link)
-                self.servers[guild].addSongToQueue(stream) 
+                server.addSongToQueue(stream,link) 
             except pytube.exceptions.RegexMatchError:
                 await self.say(text_channel,"The youtube link is invalid")
 
-
         elif(operation=="play"):
-            voice=message.author.voice
+
             if(voice==None):
                 await self.say(text_channel,"You need to be in a voice channel to start the queue")
                 return
-
-            server=self.servers[guild]
 
             if(not server.hasRemainingSongs()):
                 await self.say(text_channel,"The queue is empty")
@@ -71,15 +71,21 @@ class MyClient(Client):
                 await self.say(text_channel,"The bot is currently playing audio")
                 return
 
-
             if(server.isConnectedToVoice() and server.current_voice_client.channel!=voice.channel):
                 await server.disconnectFromAudio()
 
             if(not server.isConnectedToVoice()):
                 new_voice_client=await voice.channel.connect()
                 server.setCurrentVoiceClient(new_voice_client)
-            server.playTopSong()
+            server.setNewTextChannel(text_channel)
+            await server.playTopSong()
         
         elif(operation=="skip"):
-            pass
+            if(voice==None):
+                await self.say(text_channel,"You need to be in a voice channel to skip a song")
+                return
+            if(not server.isPlayingAudio()):
+                await self.say(text_channel,"The bot is not playing audio")
+                return
+            server.skipSong()
 

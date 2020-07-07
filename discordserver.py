@@ -1,12 +1,14 @@
 from discord import VoiceClient
 import musicsource
 import youtubebuffer
+import asyncio
 class DiscordServer:
 
-    def __init__(self):
+    def __init__(self,client_loop):
         self.song_queue=[]
         self.current_voice_client=None
         self.current_text_channel=None
+        self.client_loop=client_loop
 
     def setCurrentVoiceClient(self,voice_client):
         self.current_voice_client=voice_client
@@ -15,16 +17,32 @@ class DiscordServer:
         self.current_text_channel=text_channel
         
     async def say(self,message):
-        await current_text_channel.send(message)
+        await self.current_text_channel.send(message)
 
-    def addSongToQueue(self,stream):
-        self.song_queue.append(stream)
+    def addSongToQueue(self,stream,title):
+        self.song_queue.append((stream,title))
 
-    def playTopSong(self):
-        stream=self.song_queue.pop(0)
+    async def playTopSong(self):
+        if(len(self.song_queue)==0):
+            await self.say("Finished queue")
+            return
+
+        top=self.song_queue.pop(0)
+        stream=top[0]
+        await self.say("Now playing: "+top[1])
         buffer=youtubebuffer.getBufferFromStream(stream)
         source=musicsource.MusicSource(buffer)
-        self.current_voice_client.play(source)
+        self.current_voice_client.play(source,after=self.onStoppedPlayer)
+
+
+    def onStoppedPlayer(self,error):
+        coroutine=self.playTopSong()
+        future=asyncio.run_coroutine_threadsafe(coroutine,self.client_loop)
+        future.result()
+
+    def skipSong(self):
+        self.current_voice_client.stop()#this will stop the voice client that will triger another song 
+
 
     def hasRemainingSongs(self):
         return len(self.song_queue)!=0
@@ -41,7 +59,6 @@ class DiscordServer:
 
     def isPlayingAudio(self):
         return self.hasVoiceClient() and self.current_voice_client.is_playing()
-
 
 
     def isConnectedToVoice(self):
