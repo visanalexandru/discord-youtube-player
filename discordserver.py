@@ -10,20 +10,32 @@ class DiscordServer:
         self.current_text_channel=None
         self.client_loop=client_loop
 
+
+
     def setCurrentVoiceClient(self,voice_client):
         self.current_voice_client=voice_client
 
+
+
     def setNewTextChannel(self,text_channel):#set main text channel for server for sending messages
         self.current_text_channel=text_channel
-        
+
+
+
     async def say(self,message):
         await self.current_text_channel.send(message)
+
+
 
     def addSongToQueue(self,stream,title):
         self.song_queue.append((stream,title))
 
+
+
     def clearQueue(self):
         self.song_queue.clear()
+
+
 
     async def playTopSong(self):
         if(not self.hasRemainingSongs()):
@@ -37,12 +49,16 @@ class DiscordServer:
         self.current_voice_client.play(source,after=self.onStoppedPlayer)
 
 
+
+
     def onStoppedPlayer(self,error):
         if(self.isConnectedToVoice()):#the player can be stopped when the bot is kicked 
 
             coroutine=self.playTopSong()#start the next song in the queue
             future=asyncio.run_coroutine_threadsafe(coroutine,self.client_loop)
             future.result()
+
+
 
     def skipSong(self):
         self.current_voice_client.stop()#this will stop the voice client that will triger another song 
