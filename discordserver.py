@@ -22,6 +22,9 @@ class DiscordServer:
     def addSongToQueue(self,stream,title):
         self.song_queue.append((stream,title))
 
+    def clearQueue(self):
+        self.song_queue.clear()
+
     async def playTopSong(self):
         if(not self.hasRemainingSongs()):
             await self.say("Finished queue")

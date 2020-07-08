@@ -3,6 +3,7 @@ import asyncio
 import discordserver
 import pytube
 from discord import Client
+from discord import Embed
 
 class MyClient(Client):
 
@@ -26,7 +27,7 @@ class MyClient(Client):
         content=message.content
 
 
-        if(len(content)==0 or content[0]!='~'):#message is invalid
+        if(len(content)==0 or content[0]!='-'):#message is invalid
             return
 
         if(message.guild==None): #not in a discord server 
@@ -56,7 +57,6 @@ class MyClient(Client):
                 server.addSongToQueue(stream,link) 
             except pytube.exceptions.RegexMatchError:
                 await self.say(text_channel,"The youtube link is invalid")
-
 
 
 
@@ -98,7 +98,6 @@ class MyClient(Client):
 
 
 
-
         elif(operation=="pause"):
             if(voice==None):
                 await self.say(text_channel,"You need to be in a voice channel to pause a song")
@@ -126,3 +125,29 @@ class MyClient(Client):
                 await self.say(text_channel,"The bot is already playing audio")
                 return
             server.resumeSong()
+
+
+
+        elif (operation=="queue"):
+
+            if(not server.hasRemainingSongs()):
+                await self.say(text_channel,"The queue is empty")
+                return
+
+            embedVar =Embed(title="Song queue", color=0x00ff00)
+
+            index=1
+            for song in server.song_queue:
+                embedVar.add_field(name=("No. "+str(index)),value=song[1],inline=False)
+                index+=1
+
+            await text_channel.send(embed=embedVar)
+       
+
+
+        elif (operation=="clearqueue"):
+            if(not server.hasRemainingSongs()):
+                await self.say(text_channel,"The queue is already empty")
+
+            server.clearQueue()            
+
