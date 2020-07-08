@@ -45,20 +45,20 @@ class MyClient(Client):
         voice=message.author.voice
 
 
-
         if (operation=="add"):#adds song to server queue
             if(len(parameters)==0):
                 await self.say(text_channel,"Please input a youtube link")
                 return
-
             link=parameters[0]
+
             try:
                 stream=youtubebuffer.getStream(link)
-                server.addSongToQueue(stream,link) 
-            except pytube.exceptions.RegexMatchError:
-                await self.say(text_channel,"The youtube link is invalid")
+            except Exception as exception:
+                print("Exception when loading a youtube link:",exception)
+                await self.say(text_channel,"Could not process youtube link")
+                return
 
-
+            server.addSongToQueue(stream,link) 
 
         elif(operation=="play"):
 
