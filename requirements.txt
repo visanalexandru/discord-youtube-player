@@ -2,5 +2,6 @@ discord==1.0.1
 pydub==0.24.1
 pynacl==1.4.0
 ffmpeg==1.4
+ffprobe==0.5
 git+https://gitlab.com/obuilds/public/pytube@ob-v1
 
