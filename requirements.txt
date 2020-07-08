@@ -1,5 +1,5 @@
 discord==1.0.1
 pydub==0.24.1
-pynacl=1.4.0
+pynacl==1.4.0
 git+https://gitlab.com/obuilds/public/pytube@ob-v1
 
