@@ -2,7 +2,7 @@ from pytube import YouTube
 from io import BytesIO
 
 
-max_buffer_size_megabytes=200
+max_buffer_size_megabytes=50
 max_buffer_size=max_buffer_size_megabytes*10**6
 
 class StreamTooBigError(Exception):
