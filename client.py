@@ -54,12 +54,26 @@ class MyClient(Client):
 
             try:
                 stream=youtubebuffer.getStream(link)
-            except Exception as exception:
-                print("Exception when loading a youtube link:",exception)
-                await self.say(text_channel,"Could not process youtube link")
-                return
+                server.addSongToQueue(stream,link) 
 
-            server.addSongToQueue(stream,link) 
+            except youtubebuffer.StreamTooBigError as stream_too_big_error:
+                await self.say(text_channel,stream_too_big_error.message)
+
+            except pytube.exceptions.LiveStreamError:
+                await self.say(text_channel,"Cannot load a live stream")
+
+
+            except pytube.exceptions.RegexMatchError:
+                await self.say(text_channel,"The youtube link is invalid")
+
+
+            except pytube.exceptions.VideoUnavailable:
+                await self.say(text_channel,"The youtube video is unavailable")
+
+            except Exception as exception:
+                print("Exception when loading a youtube link:",exception,link)
+                await self.say(text_channel,"Could not process youtube link")
+
 
         elif(operation=="play"):
 
