@@ -2,6 +2,7 @@ import youtubebuffer
 import asyncio
 import discordserver
 import pytube
+import datetime
 from discord import Client
 from discord import Embed
 
@@ -149,5 +150,27 @@ class MyClient(Client):
             if(not server.hasRemainingSongs()):
                 await self.say(text_channel,"The queue is already empty")
 
-            server.clearQueue()            
+            server.clearQueue()
+
+        elif (operation=="ping"):
+            message_time=message.created_at.timestamp()
+            now=datetime.datetime.utcnow().timestamp()
+            deltatime=int((now-message_time)*1000)
+            message=await self.say(text_channel,"Pong "+str(deltatime)+" ms")
+
+
+        elif(operation=="help"):
+            embedVar=Embed(title="Commands",color=0x00ff00)
+            embedVar.add_field(name="```add```",value="Adds a song to the queue",inline=False)
+            embedVar.add_field(name="```play```",value="Start playing the queue",inline=False)
+            embedVar.add_field(name="```skip```",value="Skip the current song",inline=False)
+            embedVar.add_field(name="```pause```",value="Pause the current song",inline=False)
+            embedVar.add_field(name="```resume```",value="Resume the current song",inline=False)
+            embedVar.add_field(name="```queue```",value="Show all songs in the queue",inline=False)
+            embedVar.add_field(name="```clearqueue```",value="Clear the queue",inline=False)
+            embedVar.add_field(name="```ping```",value="Displays the latency between discord and the bot",inline=False)
+            await text_channel.send(embed=embedVar)
+        
+        else:
+            await self.say(text_channel,"Invalid command, type -help for a list of commands")
 
