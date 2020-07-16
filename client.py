@@ -26,7 +26,7 @@ class MyClient(Client):
     async def on_message(self, message):
 
         content=message.content
-
+        text_channel=message.channel
 
         if(len(content)==0 or content[0]!='-'):#message is invalid
             return
@@ -42,7 +42,7 @@ class MyClient(Client):
         operation=tokens[0]
         parameters=tokens[1:]
         server=self.servers[message.guild.id]
-        text_channel=message.channel
+
         voice=message.author.voice
 
 
